@@ -333,8 +333,10 @@ U_max_all=[];   % A vector indicating the likelihood score [ranges between 0 and
           T_haifa=readcell(Output_name);
           Inds=2:size(T_haifa,1);
 
-          figure;
-          plot(t_bpf,Y_bpf); hold on;
+          if Plot_Detections_flag
+              figure;
+              plot(t_bpf,Y_bpf); hold on;
+          end
         if ~isempty(Inds)
             cd(PF)
             Inds=Windowing_el(Inds,T_haifa);
@@ -353,7 +355,9 @@ U_max_all=[];   % A vector indicating the likelihood score [ranges between 0 and
                  end
                  cd(PF_echolocation)
                  Pk=Peaks_extract(test,click,Fs);
-                 plot(click,Pk,'*','LineWidth',2);
+                 if Plot_Detections_flag
+                    plot(click,Pk,'*','LineWidth',2);
+                 end
                  cd(Rec_folder)
                  writecell({j,click},Output_name,'WriteMode','append');
             end

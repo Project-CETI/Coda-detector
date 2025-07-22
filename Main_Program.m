@@ -169,6 +169,43 @@ for file_ind=1:length(files)
         U_max_all=fliplr(U_max_all);
         
        [Detected_codas,Coda_U]=Plot_Detections(F_ds,U_max_all,U_T,All_codas,Y_bpf,t_bpf,Rec_header,DF,Plot_Detections_flag); % Plot coda detections
+       close;
+
+       %% Final stage - remove duplicate detections (in cases where main and multi-pulses detected as two seperate codas)
+          Output_name=[Rec_header '.xls'];
+          T_haifa=readcell(Output_name);
+          Inds=2:size(T_haifa,1);
+
+          if Plot_Detections_flag
+              figure;
+              plot(t_bpf,Y_bpf); hold on;
+          end
+        if ~isempty(Inds)
+            cd(PF)
+            Inds=Windowing_el(Inds,T_haifa);
+            cd(DF)
+            delete(Output_name);
+            writecell({'Coda number','ToA [sec]'},Output_name,'WriteMode','append');            
+            for j=1:length(Inds)
+                 click_init=T_haifa{Inds(j),2};
+                 ToAs=T_haifa(Inds(j),2:end);
+                 Coda_rythm=0;
+                 click=ToAs{1};
+                 for k=1:length(ToAs)-1
+                     if ~ismissing(ToAs{k+1})
+                         click(k+1)=ToAs{k+1};
+                     end
+                 end
+                 cd(PF)
+                 Pk=Peaks_extract(Y_bpf,click,F_ds);
+                 if Plot_Detections_flag
+                    plot(click,Pk,'*','LineWidth',2);
+                 end
+                 cd(DF)
+                 writecell({j,click},Output_name,'WriteMode','append');
+            end
+        end
+  
 
 end 
 
