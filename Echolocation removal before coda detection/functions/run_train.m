@@ -25,7 +25,8 @@ function [trajectories,id_j_ToAs]=run_train(Detections,Buffer_Params,test,F_ds,r
 % arrival times of all clicks in train with index j
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
+    trajectories={};
+    id_j_ToAs={};
     l_prev=0;
     transition_arcs=[];
     detection_arcs=[];
