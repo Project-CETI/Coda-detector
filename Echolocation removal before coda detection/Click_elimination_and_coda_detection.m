@@ -7,6 +7,7 @@ clear all; clc;
 %% Arrange folder paths
 PF=pwd;
 PF=[PF '\functions']; % program folder path
+PF_echolocation=PF;
 Rec_folder=uigetdir([PF '\', 'Select audio Folder']); % audio folder path
 cd(PF)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -38,7 +39,7 @@ cd(Rec_folder);
  end
 
 %% Run the algorithm on each audio file within the selected folder
-for fi=1:1%length(Files)
+for fi=1:length(Files)
         filename=Files(fi).name;
         cd(Rec_folder);
         [test,F_ds] = audioread(filename); % load signal 
@@ -73,7 +74,7 @@ for fi=1:1%length(Files)
                 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% run separation algorithm %%%%%%%%%%%%%%%%%%%%%%%%
          %%  Click separation within buffers
-           
+        cd(PF_echolocation)   
         Detections=run_subtrain_detect(roi,F_weights,Buffer_length,test,F_ds,All_objs,Amplitude_lim,Tag_flag);    
         
         %%  Click train formation (sequences' association between buffers)
@@ -84,25 +85,12 @@ for fi=1:1%length(Files)
 
 %% Click elimination prior coda detection
 
-% echo_det=[];
-% for i=1:length(Detections)
-%     for j=1:length(Detections(i).ToAs)
-%         echo_det=[echo_det Detections(i).ToAs{j}];
-%     end    
-% end
-
-
 echo_det=[];
 for i=1:length(trajectories)
     if length(cell2mat(id_j_ToAs(trajectories{i})))>9
         echo_det=[echo_det cell2mat(id_j_ToAs(trajectories{i}))];
     end
 end
-
-% echo_det=[];
-% for i=1:size(Det,2)
-%     echo_det=[echo_det Det(i).ToAs'];
-% end
 
 PF_echolocation=PF;
 cd ..
@@ -163,11 +151,6 @@ U_max_all=[];   % A vector indicating the likelihood score [ranges between 0 and
             ty=0:1/F_ds:(1/F_ds)*(length(Y_filtered)-1); 
             te=0:1/F_ds:(1/F_ds)*(length(ey_norm)-1); 
             MPS_max=MPS_window*1e-3;     % Set the maximum plausible IPI of sperm whale clicks
-            % if Tag_flag
-            %    [pks,locs] =findpeaks(ey_norm,F_ds,'MinPeakDistance',5*MPS_max); % For DTag data: Detect transients with an ROI frame of 5*MPS_max
-            % else
-            %    [pks,locs] =findpeaks(ey_norm,F_ds,'MinPeakDistance',2*MPS_max); % For a recorder deployed from vessel: Detect transients an ROI frame of 2*MPS_max
-            % end
             if Tag_flag
                [pks,locs] =findpeaks(Y_filtered,F_ds,'MinPeakDistance',5*MPS_max,'MinPeakHeight',Amplitude_lim); % For DTag data: Detect transients with an ROI frame of 5*MPS_max
             else
@@ -182,41 +165,6 @@ U_max_all=[];   % A vector indicating the likelihood score [ranges between 0 and
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
             [Locs,Pks,Amp,SNRs]=Transient_selection(Y_filtered,ey_norm,locs,pks,F_ds,SNR_thresh,20); % Eliminate transients bellow a pre-defined SNR threshold
-
-        %  buffer=Y_filtered;
-        % [pks,locs] =findpeaks(buffer,F_ds,'MinPeakDistance',5.5e-3,'MinPeakHeight',snr_lim);
-        %     El_inds=MPS_max+2e-3;
-        %     pks(locs<El_inds | locs>(T_l-El_inds))=[];
-        %     locs(locs<El_inds | locs>(T_l-El_inds))=[];
-        % 
-        % pulse_len=1e-3;
-        % SNR2=[]; fm=[];
-        % SNR_min=3; %2.3;
-        % for i=1:length(locs)
-        %     click=buffer(int32((locs(i)-pulse_len)*F_ds):int32((locs(i)+pulse_len)*F_ds));
-        %     noise1=[buffer(int32((locs(i)-2*pulse_len)*F_ds):int32((locs(i)-pulse_len)*F_ds)) ; buffer(int32((locs(i)+pulse_len)*F_ds):int32((locs(i)+2*pulse_len)*F_ds))];
-        %     noise2=buffer(int32((locs(i)-3*pulse_len)*F_ds):int32((locs(i)-pulse_len)*F_ds));
-        %     noise3=buffer(int32((locs(i)+pulse_len)*F_ds):int32((locs(i)+3*pulse_len)*F_ds));
-        %     [~,min_noise]=min([median(abs(noise1)) median(abs(noise2)) median(abs(noise3))]);
-        %     Noise_ops={noise1,noise2,noise3};
-        %     noise=Noise_ops{min_noise};
-        %     [minlen,idx_min]=min([length(click) length(noise)]);
-        %     if idx_min==1
-        %         noise=noise(1:minlen);
-        %     elseif idx_min==2
-        %         click=click(1:minlen);
-        %     end     
-        %     Tz=buffer(int32(locs(i)*F_ds-0.1e-3*F_ds):int32(locs(i)*F_ds+0.1e-3*F_ds));
-        %     fm(i)=waveform_features_extraction2(Tz,F_ds);
-        %     SNR(i)=snr(click,noise);
-        %     SNR2(i)=log(max(abs(click))/median(abs(noise)));                     
-        % end
-        % 
-        % 
-        % pks(SNR2<SNR_min | fm>15e3)=[];
-        % locs(SNR2<SNR_min | fm>15e3)=[];
-        % Locs=locs'; Pks=pks';
-
 
             echo_det_ROI=echo_det(echo_det>In & echo_det<In+T_l);
             Tr_toas=In+Locs;
@@ -246,10 +194,6 @@ U_max_all=[];   % A vector indicating the likelihood score [ranges between 0 and
                 if length(Locs)>2
                    Creaks=detect_creaks(Locs,Pks);                        
                    Locs(Creaks)=[]; Pks(Creaks)=[];
-                   % Amp(Creaks)=[]; SNRs(Creaks)=[];
-                   % if isempty(Creaks)
-                   %     [Locs,Pks,Amp,SNRs]=Transient_selection(Y_filtered,ey_norm,locs,pks,F_ds,SNR_thresh,20); % Eliminate transients bellow a pre-defined SNR threshold
-                   % end
                 end
             end
             %% Evaluation of feature similarities
