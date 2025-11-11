@@ -49,19 +49,19 @@ for fi=1:length(Files)
 
         %% select threshold interactively
 
-        figure('Units','normalized','OuterPosition',[0 0 1 1]);
-        plot(t_test,test); hold on; title('Press a random buttom in the keyboard, then select a desired amplitude threshold')
-        xlabel('time [sec]'); ylabel('Amplitude'); 
-
-        % Enable zoom
-        zoom on;
-        pause;  % Wait for user to press a key
-        zoom off;
-        
-        % Get point from user
-        [~, Amplitude_lim] = ginput(1);
-        
-        close;
+        % figure('Units','normalized','OuterPosition',[0 0 1 1]);
+        % plot(t_test,test); hold on; title('Press a random buttom in the keyboard, then select a desired amplitude threshold')
+        % xlabel('time [sec]'); ylabel('Amplitude'); 
+        % 
+        % % Enable zoom
+        % zoom on;
+        % pause;  % Wait for user to press a key
+        % zoom off;
+        % 
+        % % Get point from user
+        % [~, Amplitude_lim] = ginput(1);
+        % 
+        % close;
 
 
 
